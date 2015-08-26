@@ -1,0 +1,196 @@
+package com.example.graph;
+
+import android.os.AsyncTask;
+// import android.support.v7.app.ActionBarActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.TextView;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.Text;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+import android.app.Activity;
+
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+//import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.XAxis.XAxisPosition;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.utils.ColorTemplate;
+//import com.xxmassdeveloper.mpchartexample.notimportant.DemoBase;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+
+public class MainActivity  extends Activity {
+
+   // private static String url = "http://api.thingspeak.com/channels/9/feed.json";
+    JSONParser jParser = new JSONParser();
+   // JSONArray row_json = null;
+
+//    String[] news_id;
+//    String[] news_name;
+//    String[] news_image;
+//    String[] news_stats;
+//    String[] news_detail;
+//    String[] news_date;
+//    String[] news_prev;
+//    String[] news_next;
+//    String success;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+        BarChart chart = (BarChart) findViewById(R.id.chart);
+
+        BarData data = new BarData(getXAxisValues(), getDataSet());
+        chart.setData(data);
+        chart.setDescription("My Chart");
+        chart.animateXY(2000, 2000);
+        chart.invalidate();
+
+
+    } //End onCreate
+
+
+
+    /**
+     * After completing background task Dismiss the progress dialog
+     **/
+
+
+
+
+
+    private ArrayList<BarDataSet> getDataSet() {
+
+        JSONArray new_json = null;
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("id",getIntent().getExtras().getString("news_id")));
+        JSONObject json = jParser.makeHttpRequest("http://api.thingspeak.com/channels/9/field/2.json", "GET", params);
+        try {
+            // Checking for SUCCESS TAG
+            Log.e("JSON",json.toString());
+
+            new_json = json.getJSONArray("feeds");
+
+            String[] created_at = new String[new_json.length()];
+            String[]   entry_id = new String[new_json.length()];
+            String[]  field1 = new String[new_json.length()];
+            String[]   field2 = new String[new_json.length()];
+
+            Log.e("JSON",  created_at.toString()) ;
+
+
+
+
+            for (int x = 0; x < new_json.length(); x++) {
+                JSONObject new2_json = new_json.getJSONObject(x);
+
+                created_at[x] = new2_json.getString("created_at");
+                entry_id[x] = new2_json.getString("entry_id");
+                field1[x] = new2_json.getString("field1");
+                field2[x] = new2_json.getString("field2");
+
+
+                ArrayList<BarDataSet> dataSets = null;
+
+                ArrayList<BarEntry> valueSet1 = new ArrayList<>();
+           //     BarEntry v1e1 = new BarEntry( field1[x] ,0) ; // Jan
+            //    valueSet1.add(v1e1);
+
+
+                ArrayList<BarEntry> valueSet2 = new ArrayList<>();
+                BarEntry v2e1 = new BarEntry(150.000f, 0); // Jan
+                valueSet2.add(v2e1);
+
+
+                BarDataSet barDataSet1 = new BarDataSet(valueSet1, "Brand 1");
+                barDataSet1.setColor(Color.rgb(0, 155, 0));
+                BarDataSet barDataSet2 = new BarDataSet(valueSet2, "Brand 2");
+                barDataSet2.setColors(ColorTemplate.COLORFUL_COLORS);
+
+                dataSets = new ArrayList<>();
+                dataSets.add(barDataSet1);
+                dataSets.add(barDataSet2);
+                return dataSets;
+
+
+
+            }
+
+
+            //   Log.e("JSON",created_at[x]+  entry_id[x] + field1[x]+  field2[x]   );
+
+
+
+
+        } catch (JSONException e) {
+            Log.e("ConnectServer", "Error parsing data " + e.toString());
+        } catch (Exception e) {
+            Log.e("ERROR", "Error parsing data " + e.toString());
+        }
+
+        return null;
+    }
+
+
+
+
+
+
+    private ArrayList<String> getXAxisValues() {
+        ArrayList<String> xAxis = new ArrayList<>();
+        xAxis.add("JAN");
+        xAxis.add("FEB");
+        xAxis.add("MAR");
+        xAxis.add("APR");
+        xAxis.add("MAY");
+        xAxis.add("JUN");
+        return xAxis;
+    }
+
+
+
+    }
+
+
+
+
